@@ -82,3 +82,28 @@ Proxy de Protección: Verificar permisos antes de cargar/mostrar la imagen
 Proxy de Cache: Almacenar en cache imágenes ya cargadas
 Proxy de Logging: Registrar cada vez que se accede a una imagen
 Proxy Remoto: Acceder a imágenes en servidores remotos
+
+## ✍️ Respuestas a las preguntas de análisis
+
+**Carga perezosa:** En el código original el constructor de `RealImage` (y con él la carga desde disco) se ejecuta en cuanto se hace `new RealImage(...)`, aunque la imagen nunca se muestre. Con el Proxy, `RealImage` se crea hasta la primera llamada a `display()`.
+
+**Transparencia:** No. El cliente solo conoce la interfaz `Image` y llama a `display()`. Como `ProxyImage` y `RealImage` implementan la misma interfaz, se pueden intercambiar sin cambiar el código cliente.
+
+**Rendimiento:** Se evita hacer la operación costosa si la imagen nunca se usa, el arranque de la aplicación es más rápido y la imagen se carga una sola vez aunque se muestre muchas veces (el proxy guarda la referencia).
+
+**Control de acceso:** Se puede verificar permisos antes de crear o mostrar la imagen (proxy de protección), registrar cada acceso (logging), guardar en caché imágenes ya cargadas o acceder a imágenes en un servidor remoto.
+
+**Principio SOLID:** Principalmente el de Sustitución de Liskov (el proxy puede usarse en cualquier lugar donde se espera una `Image`) y el de Inversión de Dependencias (el cliente depende de la abstracción `Image`, no de la clase concreta). También el Abierto/Cerrado: se agrega comportamiento sin modificar `RealImage`.
+
+### 🧪 Resultado de las pruebas
+
+```
+Application started.
+Proxy created, but RealImage not loaded yet.
+Loading image (very expensive operation): photo.jpg
+Displaying image: photo.jpg
+Second call:
+Displaying image: photo.jpg
+```
+
+La carga aparece solo al llamar a `display()` y ocurre una sola vez.
